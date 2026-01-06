@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEM Playground - Checkout</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Checkout</h1>
+            <div class="version" id="version">Loading...</div>
+        </header>
+
+        <nav>
+            <a href="/">Home</a>
+            <a href="/checkout">Checkout</a>
+            <a href="/status">Status</a>
+        </nav>
+
+        <main>
+            <section class="checkout-form">
+                <h2>Fake Checkout</h2>
+                <form id="checkout-form">
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <button type="submit" class="btn-primary">Submit Order</button>
+                </form>
+
+                <div id="checkout-message" class="message"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
+

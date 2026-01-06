@@ -1,0 +1,329 @@
+/**
+ * DEM Playground - Basic Styles
+ * Minimal CSS for readability (no design polish needed)
+ */
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f5f5f5;
+  padding: 20px;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+header {
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #eee;
+}
+
+header h1 {
+  font-size: 2em;
+  margin-bottom: 10px;
+  color: #2c3e50;
+}
+
+.version {
+  font-size: 0.9em;
+  color: #666;
+  font-weight: 500;
+}
+
+nav {
+  margin-bottom: 30px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+nav a {
+  display: inline-block;
+  margin-right: 20px;
+  padding: 8px 16px;
+  text-decoration: none;
+  color: #3498db;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+nav a:hover {
+  background-color: #ecf0f1;
+}
+
+nav a:active,
+nav a:focus {
+  background-color: #d5dbdb;
+}
+
+main {
+  margin-top: 20px;
+}
+
+section {
+  margin-bottom: 30px;
+}
+
+h2 {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+/* State Panel */
+.state-panel {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+  margin-bottom: 30px;
+}
+
+#state-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.state-item {
+  padding: 10px;
+  background: white;
+  border-radius: 4px;
+}
+
+.badge-on {
+  color: #e74c3c;
+  font-weight: bold;
+}
+
+.badge-off {
+  color: #27ae60;
+  font-weight: bold;
+}
+
+/* Controls */
+.controls {
+  margin-top: 20px;
+}
+
+.control-group {
+  margin-bottom: 25px;
+  padding: 15px;
+  background-color: #fafafa;
+  border-radius: 6px;
+  border-left: 4px solid #3498db;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.help-text {
+  font-size: 0.85em;
+  color: #666;
+  margin-top: 5px;
+  font-style: italic;
+}
+
+/* Buttons */
+button, .btn-primary, .btn-secondary, .btn-danger, .btn-warning {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-right: 10px;
+  margin-top: 5px;
+}
+
+.btn-primary {
+  background-color: #3498db;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2980b9;
+}
+
+.btn-secondary {
+  background-color: #95a5a6;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background-color: #7f8c8d;
+}
+
+.btn-danger {
+  background-color: #e74c3c;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.btn-warning {
+  background-color: #f39c12;
+  color: white;
+}
+
+.btn-warning:hover {
+  background-color: #d68910;
+}
+
+/* Form Elements */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1em;
+}
+
+.form-group input[type="range"] {
+  width: 300px;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+#slow-ms-value {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+/* Messages */
+.message {
+  margin-top: 20px;
+  padding: 15px;
+  border-radius: 4px;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+/* Status Display */
+.status-display {
+  background-color: #f8f9fa;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #dee2e6;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.status-item {
+  padding: 15px;
+  background: white;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.status-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.status-item label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.status-item span {
+  display: block;
+  font-size: 1.2em;
+  font-weight: 500;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 12px;
+  font-size: 0.9em;
+  font-weight: bold;
+}
+
+.status-badge.status-ok {
+  background-color: #d4edda;
+  color: #155724;
+}
+
+.status-badge.status-error {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.error-text {
+  color: #e74c3c;
+  font-weight: 500;
+}
+
+.auto-refresh-info {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #dee2e6;
+  font-size: 0.9em;
+  color: #666;
+  font-style: italic;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .control-group input[type="range"] {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+

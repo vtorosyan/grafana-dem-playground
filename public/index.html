@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEM Playground - Home</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>DEM Playground</h1>
+            <div class="version" id="version">Loading...</div>
+        </header>
+
+        <nav>
+            <a href="/">Home</a>
+            <a href="/checkout">Checkout</a>
+            <a href="/status">Status</a>
+        </nav>
+
+        <main>
+            <section class="state-panel">
+                <h2>Current State</h2>
+                <div id="state-display">Loading state...</div>
+            </section>
+
+            <section class="controls">
+                <h2>Failure Toggles</h2>
+                
+                <div class="control-group">
+                    <button id="btn-js-error" class="btn-danger">Trigger JS Error</button>
+                    <p class="help-text">Intentionally throws a JavaScript error</p>
+                </div>
+
+                <div class="control-group">
+                    <button id="btn-toggle-js-error-mode" class="btn-danger">Toggle JS Error Mode</button>
+                    <p class="help-text">When enabled, checkout form will throw an error after submission</p>
+                </div>
+
+                <div class="control-group">
+                    <button id="btn-toggle-fail" class="btn-danger">Toggle API Fail (500)</button>
+                    <p class="help-text">Makes /api/health return HTTP 500</p>
+                </div>
+
+                <div class="control-group">
+                    <button id="btn-toggle-slow" class="btn-warning">Toggle API Slow</button>
+                    <p class="help-text">Adds artificial delay to /api/health responses</p>
+                </div>
+
+                <div class="control-group">
+                    <label for="slow-ms">Slow Delay (ms):</label>
+                    <input type="range" id="slow-ms" min="0" max="5000" step="100" value="2000">
+                    <span id="slow-ms-value">2000</span>
+                    <button id="btn-update-slow" class="btn-secondary">Update Delay</button>
+                    <p class="help-text">Adjust delay for slow mode (0-5000ms)</p>
+                </div>
+
+                <div class="control-group">
+                    <button id="btn-generate-activity" class="btn-primary">Generate Activity</button>
+                    <p class="help-text">Simulates user activity: navigates pages and makes API calls</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
+

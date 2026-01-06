@@ -1,0 +1,20 @@
+{
+  "name": "dem-playground",
+  "version": "1.0.0",
+  "description": "Tiny demo app for Week of Load Testing (WOLT) - DEM lifecycle demo",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": ["dem", "observability", "load-testing"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
+

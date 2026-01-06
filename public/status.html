@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEM Playground - Status</title>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Status Monitor</h1>
+            <div class="version" id="version">Loading...</div>
+        </header>
+
+        <nav>
+            <a href="/">Home</a>
+            <a href="/checkout">Checkout</a>
+            <a href="/status">Status</a>
+        </nav>
+
+        <main>
+            <section class="status-display">
+                <h2>Health Status</h2>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <label>Status:</label>
+                        <span id="status-ok" class="status-badge">Loading...</span>
+                    </div>
+                    
+                    <div class="status-item">
+                        <label>Response Time:</label>
+                        <span id="status-latency">-</span>
+                    </div>
+                    
+                    <div class="status-item">
+                        <label>Version:</label>
+                        <span id="status-version">-</span>
+                    </div>
+                    
+                    <div class="status-item">
+                        <label>Last Check:</label>
+                        <span id="status-timestamp">-</span>
+                    </div>
+                    
+                    <div class="status-item full-width">
+                        <label>Last Error:</label>
+                        <span id="status-error" class="error-text">None</span>
+                    </div>
+                </div>
+
+                <div class="auto-refresh-info">
+                    <p>Auto-refreshing every 5 seconds...</p>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
+
