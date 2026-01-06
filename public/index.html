@@ -5,6 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DEM Playground - Home</title>
     <link rel="stylesheet" href="/styles.css">
+    <script type="importmap">
+    {
+      "imports": {
+        "@grafana/faro-web-sdk": "/node_modules/@grafana/faro-web-sdk/dist/esm/index.js",
+        "@grafana/faro-web-tracing": "/node_modules/@grafana/faro-web-tracing/dist/esm/index.js"
+      }
+    }
+    </script>
+    <script type="module" src="/faro-init.js"></script>
 </head>
 <body>
     <div class="container">

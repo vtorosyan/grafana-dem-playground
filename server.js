@@ -9,10 +9,14 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_VERSION = process.env.APP_VERSION || 'v1';
+const FARO_COLLECTOR_URL = process.env.FARO_COLLECTOR_URL || '';
 
 // Middleware
 app.use(express.json());
 app.use(express.static('public'));
+
+// Serve node_modules for Faro ES modules (only for Faro packages)
+app.use('/node_modules/@grafana', express.static('node_modules/@grafana'));
 
 // In-memory state for runtime flags
 let state = {
@@ -109,6 +113,16 @@ app.post('/api/toggle', (req, res) => {
 // API: Get current state
 app.get('/api/state', (req, res) => {
   res.json(state);
+});
+
+// API: Get Faro configuration (expose collector URL to frontend)
+app.get('/api/faro-config', (req, res) => {
+  if (!FARO_COLLECTOR_URL) {
+    return res.status(503).json({ error: 'Faro collector URL not configured' });
+  }
+  res.json({
+    collectorUrl: FARO_COLLECTOR_URL
+  });
 });
 
 // Start server

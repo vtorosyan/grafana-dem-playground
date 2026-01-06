@@ -5,6 +5,28 @@
 
 console.log('DEM Playground frontend loaded');
 
+// Helper function to push custom events to Faro (if available)
+function pushFaroEvent(name, attributes = {}) {
+  try {
+    // Faro API might be available through window.faro.api or globally
+    // Check multiple possible locations
+    let faroApi = null;
+    if (window.faro && window.faro.api) {
+      faroApi = window.faro.api;
+    } else if (window.faro && window.faro.pushEvent) {
+      faroApi = window.faro;
+    }
+    
+    if (faroApi && typeof faroApi.pushEvent === 'function') {
+      faroApi.pushEvent(name, attributes);
+      console.log('Faro event pushed:', name, attributes);
+    }
+  } catch (error) {
+    // Silently fail if Faro is not available
+    console.debug('Faro event push failed:', error);
+  }
+}
+
 // Global state tracking
 let appState = {
   slowMode: false,
@@ -95,6 +117,7 @@ function initHomePage() {
   if (btnJsError) {
     btnJsError.addEventListener('click', () => {
       console.log('User clicked: Trigger JS Error');
+      pushFaroEvent('js_error_triggered', { source: 'home_page_button' });
       throw new Error('Intentional JavaScript error triggered from home page button');
     });
   }
@@ -155,7 +178,9 @@ function initHomePage() {
   if (btnGenerateActivity) {
     btnGenerateActivity.addEventListener('click', async () => {
       console.log('User clicked: Generate Activity');
+      pushFaroEvent('activity_generation_started');
       await generateActivity();
+      pushFaroEvent('activity_generation_completed');
     });
   }
 }
@@ -237,6 +262,10 @@ function initCheckoutPage() {
       const email = document.getElementById('email').value;
       
       console.log('Form data:', { name, email });
+      pushFaroEvent('checkout_submitted', { 
+        hasName: !!name, 
+        hasEmail: !!email 
+      });
       
       // Call health API
       const start = performance.now();
@@ -253,6 +282,9 @@ function initCheckoutPage() {
             messageEl.textContent = `Order submitted successfully! (Response time: ${duration.toFixed(0)}ms)`;
           }
           console.log('Checkout successful');
+          pushFaroEvent('checkout_success', { 
+            responseTime: duration.toFixed(0) 
+          });
         } else {
           throw new Error(data.error || 'Health check failed');
         }
@@ -262,6 +294,10 @@ function initCheckoutPage() {
           messageEl.className = 'message error';
           messageEl.textContent = `Error: ${error.message}`;
         }
+        pushFaroEvent('checkout_failed', { 
+          error: error.message,
+          responseTime: duration.toFixed(0)
+        });
       }
       
       // Throw JS error if jsErrorMode is enabled

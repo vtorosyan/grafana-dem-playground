@@ -11,6 +11,7 @@ This is an intentionally small application with no database, designed to be easy
 - **Node.js** + **Express.js**
 - Static frontend served from `/public`
 - Plain HTML + vanilla JavaScript (no frameworks)
+- **Grafana Faro** for RUM (Real User Monitoring)
 - Environment variables for configuration
 - In-memory state (no database)
 
@@ -27,7 +28,17 @@ This is an intentionally small application with no database, designed to be easy
    npm install
    ```
 
-2. **Run the app:**
+2. **Set environment variables:**
+   Create a `.env` file (or set environment variables):
+   ```bash
+   PORT=3000
+   APP_VERSION=v1.0.0
+   FARO_COLLECTOR_URL=https://faro-collector-prod-us-central-0.grafana.net/collect/YOUR_COLLECTOR_ID
+   ```
+   
+   ⚠️ **Important**: The `FARO_COLLECTOR_URL` contains your Grafana collector ID and should not be committed to git. The `.env` file is already in `.gitignore`.
+
+3. **Run the app:**
    ```bash
    npm start
    ```
@@ -36,18 +47,33 @@ This is an intentionally small application with no database, designed to be easy
    npm run dev
    ```
 
-3. **Access the app:**
+4. **Access the app:**
    Open http://localhost:3000 in your browser
+   
+   **Note**: If `FARO_COLLECTOR_URL` is not set, the app will run but RUM monitoring will be disabled (you'll see a warning in the browser console).
 
 ### Environment Variables
 
 - `PORT` - Server port (default: 3000)
 - `APP_VERSION` - App version string (default: "v1")
+- `FARO_COLLECTOR_URL` - **Required** for RUM monitoring. Your Grafana Faro collector URL
+  - Example: `https://faro-collector-prod-us-central-0.grafana.net/collect/YOUR_COLLECTOR_ID`
+  - Get this from your Grafana Cloud instance
+  - ⚠️ **Do not commit this to git!** Use environment variables or `.env` file
 
 Example:
 ```bash
-PORT=8080 APP_VERSION=v2.0.0 npm start
+PORT=8080 APP_VERSION=v2.0.0 FARO_COLLECTOR_URL=https://faro-collector-prod-us-central-0.grafana.net/collect/YOUR_ID npm start
 ```
+
+Or create a `.env` file (already in `.gitignore`):
+```bash
+PORT=3000
+APP_VERSION=v1.0.0
+FARO_COLLECTOR_URL=https://faro-collector-prod-us-central-0.grafana.net/collect/YOUR_COLLECTOR_ID
+```
+
+Then use `dotenv` or your platform's environment variable handling.
 
 ## Project Structure
 
@@ -60,7 +86,8 @@ dem-playground/
     ├── index.html     # Home page
     ├── checkout.html  # Checkout page
     ├── status.html    # Status monitoring page
-    ├── app.js         # Frontend JavaScript
+    ├── app.js         # Frontend JavaScript (includes custom event tracking)
+    ├── faro-init.js   # Grafana Faro RUM initialization
     └── styles.css     # Basic styling
 ```
 
@@ -321,34 +348,139 @@ docker run -p 3000:3000 -e APP_VERSION=v1.0.0 dem-playground
 
 For serverless deployments, you may need to adapt the Express server to their serverless functions format, or use a platform that supports persistent Node.js processes (like Railway, Render, or Fly.io).
 
+## Grafana Faro RUM Integration
+
+This app is integrated with **Grafana Faro** for Real User Monitoring (RUM). All pages automatically send telemetry data to your Grafana Cloud instance.
+
+### Automatic Metrics & Events (from Faro SDK)
+
+The following are automatically captured by Grafana Faro's built-in instrumentations:
+
+#### **Errors**
+- **JavaScript Errors**: All uncaught JavaScript exceptions
+  - Includes stack traces, error messages, and source locations
+  - Captured via `window.onerror` and `unhandledrejection`
+- **Console Errors**: Error-level console messages
+- **Resource Errors**: Failed resource loads (images, scripts, etc.)
+
+#### **Performance Metrics**
+- **Page Load Timing**: 
+  - `domContentLoaded`, `load`, `firstPaint`, `firstContentfulPaint`
+  - Navigation timing API metrics
+- **Resource Timing**: 
+  - Load times for CSS, JS, images, and other resources
+  - DNS lookup, connection, and transfer times
+- **Web Vitals**:
+  - **LCP** (Largest Contentful Paint)
+  - **FID** (First Input Delay)
+  - **CLS** (Cumulative Layout Shift)
+  - **FCP** (First Contentful Paint)
+  - **TTFB** (Time to First Byte)
+
+#### **Navigation & Views**
+- **Page Views**: Automatic tracking on route changes
+- **Session Tracking**: Unique session IDs for user journeys
+- **User Actions**: Click, keyboard, and form interactions
+
+#### **HTTP Request Tracing**
+- **All Fetch/XHR Requests**: Automatically traced with:
+  - Request/response headers
+  - Response status codes
+  - Response times
+  - Request URLs and methods
+- **Distributed Tracing**: OpenTelemetry-compatible trace context
+
+#### **Session Replay**
+- **DOM Snapshotting**: Periodic snapshots of page state
+- **User Interactions**: Mouse movements, clicks, scrolls, keystrokes
+- **Full Session Recording**: Replayable user sessions
+
+### Custom Events
+
+The app sends the following custom events for key user actions:
+
+#### **`js_error_triggered`**
+- **When**: User clicks "Trigger JS Error" button on home page
+- **Attributes**:
+  - `source`: Always `"home_page_button"`
+- **Use Case**: Testing error tracking and session replay
+
+#### **`checkout_submitted`**
+- **When**: User submits the checkout form
+- **Attributes**:
+  - `hasName`: Boolean indicating if name field was filled
+  - `hasEmail`: Boolean indicating if email field was filled
+- **Use Case**: Track checkout funnel and form completion
+
+#### **`checkout_success`**
+- **When**: Checkout form submission succeeds (API returns 200 OK)
+- **Attributes**:
+  - `responseTime`: Response time in milliseconds (string)
+- **Use Case**: Track successful checkouts and performance
+
+#### **`checkout_failed`**
+- **When**: Checkout form submission fails (API error or 500 response)
+- **Attributes**:
+  - `error`: Error message (string)
+  - `responseTime`: Response time in milliseconds (string)
+- **Use Case**: Track checkout failures and error correlation
+
+#### **`activity_generation_started`**
+- **When**: User clicks "Generate Activity" button
+- **Attributes**: None
+- **Use Case**: Mark the start of simulated user activity
+
+#### **`activity_generation_completed`**
+- **When**: "Generate Activity" sequence finishes
+- **Attributes**: None
+- **Use Case**: Mark completion of simulated user journey
+
+### Session Metadata
+
+All telemetry includes automatic metadata:
+- **App Name**: `"DEM Playground"`
+- **App Version**: Dynamically fetched from `/api/state` endpoint (defaults to env var `APP_VERSION`)
+- **Environment**: `"production"`
+- **Browser Info**: User agent, viewport size, language
+- **Page URL**: Current page path
+- **Session ID**: Unique session identifier
+
+### Configuration
+
+Faro is initialized in `public/faro-init.js` with:
+- **Collector URL**: Your Grafana Faro collector endpoint
+- **Web Instrumentations**: Standard browser instrumentations (errors, performance, navigation, etc.)
+- **Tracing Instrumentation**: HTTP request tracing via OpenTelemetry
+
+To update the collector URL or configuration, edit `public/faro-init.js`.
+
 ## Next Steps
 
-### Adding RUM (Real User Monitoring)
+### RUM Integration Status
 
-To integrate with Grafana Faro or another RUM solution:
+✅ **Grafana Faro is already integrated!** 
 
-1. **Add RUM snippet to HTML:**
-   Add the RUM script tag to each HTML file in the `<head>` section:
+The app uses ES modules with import maps to load Faro packages. All pages include:
+- Faro initialization script in `<head>` (via `public/faro-init.js`)
+- Automatic error, performance, and navigation tracking
+- Custom event tracking for key user actions
+- HTTP request tracing
 
-   ```html
-   <!-- Grafana Faro example -->
-   <script>
-     !function(){var e=window.faro||(window.faro={});e.q=e.q||[],e.load=function(t,n){var r=document.createElement("script");r.async=!0,r.src=t;var i=document.getElementsByTagName("script")[0];i.parentNode.insertBefore(r,i),e.q.push(n)},e.load("https://cdn.jsdelivr.net/npm/@grafana/faro-web-sdk@latest/dist/bundle/faro.min.js",function(){faro.initialize({url:"YOUR_FARO_ENDPOINT",app:{name:"dem-playground",version:"v1"}})})}();
-   </script>
-   ```
+See the [Grafana Faro RUM Integration](#grafana-faro-rum-integration) section above for details on all tracked metrics and events.
 
-2. **Custom instrumentation:**
-   The app already includes console logging which RUM tools typically capture. You can add custom events:
+### Adding More Custom Events
 
-   ```javascript
-   // In app.js
-   if (window.faro) {
-     window.faro.api.pushEvent('checkout_submitted', { name, email });
-   }
-   ```
+To add additional custom events, use the `pushFaroEvent()` helper function in `app.js`:
 
-3. **Error tracking:**
-   RUM tools automatically capture JavaScript errors. The app already throws intentional errors for testing.
+```javascript
+pushFaroEvent('event_name', {
+  attribute1: 'value1',
+  attribute2: 123,
+  // ... more attributes
+});
+```
+
+The helper automatically checks if Faro is available and handles errors gracefully.
 
 ### Adding APM / Backend Observability
 
