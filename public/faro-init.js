@@ -58,12 +58,12 @@
         
         tracingScript.onload = function() {
           console.log('✅ Tracing package loaded');
-          initializeFaro(appVersion, collectorUrl);
+          loadReplayAndInit(appVersion, collectorUrl);
         };
         
         tracingScript.onerror = function() {
           console.warn('⚠️ Tracing package failed to load, continuing without it');
-          initializeFaro(appVersion, collectorUrl);
+          loadReplayAndInit(appVersion, collectorUrl);
         };
         
         document.head.appendChild(tracingScript);
@@ -78,6 +78,21 @@
     } catch (error) {
       console.error('❌ Initialization error:', error);
     }
+  }
+  
+  function loadReplayAndInit(appVersion, collectorUrl) {
+    var replayScript = document.createElement('script');
+    replayScript.src = 'https://cdn.jsdelivr.net/npm/@grafana/faro-instrumentation-replay@latest/dist/bundle/faro-instrumentation-replay.iife.js';
+    replayScript.async = true;
+    replayScript.onload = function() {
+      console.log('✅ Replay instrumentation loaded');
+      initializeFaro(appVersion, collectorUrl);
+    };
+    replayScript.onerror = function() {
+      console.warn('⚠️ Replay package failed to load, continuing without session replay');
+      initializeFaro(appVersion, collectorUrl);
+    };
+    document.head.appendChild(replayScript);
   }
   
   function initializeFaro(appVersion, collectorUrl) {
@@ -117,6 +132,26 @@
             console.log('✅ Tracing instrumentation added');
           } catch (e) {
             console.warn('Could not add tracing:', e);
+          }
+        }
+        
+        // Add session replay instrumentation (experimental)
+        var ReplayInstrumentation =
+          (window.GrafanaFaroInstrumentationReplay && window.GrafanaFaroInstrumentationReplay.ReplayInstrumentation) ||
+          (window.GrafanaFaroInstrumentationReplay && window.GrafanaFaroInstrumentationReplay.default) ||
+          (typeof window.GrafanaFaroInstrumentationReplay === 'function' && window.GrafanaFaroInstrumentationReplay);
+        if (ReplayInstrumentation) {
+          try {
+            instrumentations.push(new ReplayInstrumentation({
+              maskInputOptions: {
+                password: true,
+                email: true,
+              },
+              maskAllInputs: false,
+            }));
+            console.log('✅ Session replay instrumentation added');
+          } catch (e) {
+            console.warn('Could not add replay instrumentation:', e);
           }
         }
         

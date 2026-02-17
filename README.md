@@ -565,12 +565,22 @@ All telemetry includes automatic metadata:
 - **Page URL**: Current page path
 - **Session ID**: Unique session identifier
 
+### Session Replay (Experimental)
+
+The app includes **@grafana/faro-instrumentation-replay** for session replay. It is loaded from CDN and configured with:
+
+- `maskInputOptions: { password: true, email: true }` – masks sensitive inputs
+- `maskAllInputs: false` – only masks password and email fields
+
+Session recordings are sent to your Faro collector. Check your Grafana Frontend Observability app for replay data.
+
 ### Configuration
 
 Faro is initialized in `public/faro-init.js` with:
 - **Collector URL**: Your Grafana Faro collector endpoint
 - **Web Instrumentations**: Standard browser instrumentations (errors, performance, navigation, etc.)
 - **Tracing Instrumentation**: HTTP request tracing via OpenTelemetry
+- **Replay Instrumentation**: Session replay (masks password and email inputs)
 
 To update the collector URL or configuration, edit `public/faro-init.js`.
 
