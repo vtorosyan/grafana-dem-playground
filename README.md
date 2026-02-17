@@ -225,7 +225,28 @@ The version is displayed on all pages and included in all API responses, making 
 
 ## Load Testing with k6
 
-### Basic Health Check Script
+Pre-built scripts are in `scripts/k6/`:
+
+| Script | Type | Description |
+|--------|------|-------------|
+| `http-health.js` | HTTP | Health + state API with assertions |
+| `http-multi-step.js` | HTTP | Chained flow (session → validate → order) |
+| `http-navigation.js` | HTTP | All pages + APIs |
+| `http-stress.js` | HTTP | Ramping load test |
+| `browser-checkout.js` | Browser | Checkout form flow |
+| `browser-products.js` | Browser | Products page flow |
+
+```bash
+# Run against local app
+k6 run scripts/k6/http-health.js
+
+# Run against deployed app
+BASE_URL=https://grafana-dem-playground.fly.dev k6 run scripts/k6/http-multi-step.js
+```
+
+See `scripts/k6/README.md` for details.
+
+### Basic Health Check Script (inline example)
 
 ```javascript
 import http from 'k6/http';
