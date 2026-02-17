@@ -183,6 +183,42 @@ function initHomePage() {
       pushFaroEvent('activity_generation_completed');
     });
   }
+
+  // Error spike button - generates 100+ errors for testing
+  const btnErrorSpike = document.getElementById('btn-error-spike');
+  if (btnErrorSpike) {
+    btnErrorSpike.addEventListener('click', () => {
+      console.log('User clicked: Trigger Error Spike');
+      pushFaroEvent('error_spike_triggered', { count: 250 });
+      triggerErrorSpike();
+    });
+  }
+}
+
+/**
+ * Trigger a spike of errors for testing error storm detection
+ * - 150 JavaScript errors (thrown asynchronously)
+ * - 100 failed API calls to /api/error
+ */
+function triggerErrorSpike() {
+  const JS_ERROR_COUNT = 150;
+  const API_ERROR_COUNT = 100;
+
+  console.log(`Triggering error spike: ${JS_ERROR_COUNT} JS errors + ${API_ERROR_COUNT} API failures`);
+
+  // 1. Fire 150 JavaScript errors, staggered so each gets captured
+  for (let i = 0; i < JS_ERROR_COUNT; i++) {
+    setTimeout(() => {
+      throw new Error(`Error spike #${i + 1}/${JS_ERROR_COUNT} - Intentional error for DEM testing`);
+    }, i * 25); // 25ms apart = ~3.75 seconds total
+  }
+
+  // 2. Fire 100 failed API requests
+  for (let i = 0; i < API_ERROR_COUNT; i++) {
+    fetch('/api/error').catch(() => {});
+  }
+
+  console.log('Error spike initiated - check your RUM/observability platform');
 }
 
 /**

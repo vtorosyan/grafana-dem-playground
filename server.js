@@ -115,6 +115,15 @@ app.get('/api/state', (req, res) => {
   res.json(state);
 });
 
+// API: Always returns 500 - used for error spike simulation
+app.get('/api/error', (req, res) => {
+  res.status(500).json({
+    ok: false,
+    error: 'Error spike - intentional 500 response',
+    ts: Date.now()
+  });
+});
+
 // API: Get Faro configuration (expose collector URL to frontend)
 app.get('/api/faro-config', (req, res) => {
   if (!FARO_COLLECTOR_URL) {
