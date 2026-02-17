@@ -310,6 +310,25 @@ button, .btn-primary, .btn-secondary, .btn-danger, .btn-warning {
   font-style: italic;
 }
 
+/* Products list */
+.product-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  margin-bottom: 8px;
+  background: #f8f9fa;
+  border-radius: 4px;
+  border-left: 4px solid #3498db;
+}
+.product-item a {
+  color: #3498db;
+  text-decoration: none;
+}
+.product-item a:hover {
+  text-decoration: underline;
+}
+
 /* Responsive */
 @media (max-width: 600px) {
   .container {

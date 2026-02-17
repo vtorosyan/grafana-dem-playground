@@ -96,6 +96,7 @@ dem-playground/
 ### Frontend Pages
 
 - `GET /` - Home page with failure toggles and controls
+- `GET /products` - Product list page (loads from API)
 - `GET /checkout` - Fake checkout page with form submission
 - `GET /status` - Real-time status monitoring page
 
@@ -111,6 +112,19 @@ dem-playground/
 
 - `GET /api/state` - Get current runtime state
   - Returns: `{ slowMode, slowMs, failMode, jsErrorMode, version }`
+
+- `GET /api/error` - Always returns 500 (for error spike simulation)
+
+#### Synthetic Monitoring APIs (multi-HTTP, scripted checks)
+
+- `GET /api/session/init` - Returns `{ sessionId, token, expiresIn }` for chained validation
+- `GET /api/session/validate?sessionId=X&token=Y` - Validates session; 200 if valid, 401 if invalid
+- `GET /api/products` - Returns `{ products: [...] }` product list
+- `GET /api/products/:id` - Returns single product by ID
+- `POST /api/orders` - Creates order; body `{ items?: [...] }`; returns `{ orderId, status }`
+- `GET /api/orders/:orderId` - Returns order by ID
+- `GET /api/script/echo?key=val` - Echoes query params (for script assertions)
+- `POST /api/script/echo` - Echoes request body (for script assertions)
 
 ## Failure Modes
 
@@ -305,6 +319,91 @@ export default function () {
   );
 }
 ```
+
+## Grafana Synthetic Monitoring
+
+This app is designed for Grafana Synthetic Monitoring. Use these examples for **multi-HTTP**, **browser**, and **scripted** checks.
+
+### Multi-HTTP Checks (chained requests)
+
+Use response data from one request in the next. Example flow:
+
+| Step | Method | URL | Extract | Assert |
+|------|--------|-----|---------|--------|
+| 1 | GET | `https://grafana-dem-playground.fly.dev/api/session/init` | `sessionId`, `token` | Status 200 |
+| 2 | GET | `https://grafana-dem-playground.fly.dev/api/session/validate?sessionId={{.Step1.sessionId}}&token={{.Step1.token}}` | - | Status 200, `valid: true` |
+| 3 | POST | `https://grafana-dem-playground.fly.dev/api/orders` | `orderId` | Body `{"items":[{"productId":"prod-1","qty":1}]}`, Status 201 |
+| 4 | GET | `https://grafana-dem-playground.fly.dev/api/orders/{{.Step3.orderId}}` | - | Status 200, `status: "created"` |
+
+**In Grafana Synthetic Monitoring:**
+- Create a **multi-HTTP** check
+- Add steps 1–4 with the correct variable extraction syntax (`{{.Step1.sessionId}}`, etc.)
+- Configure assertions on status codes and response body (e.g., JSON path `$.valid` = true)
+
+### Browser Checks
+
+Use Playwright selectors with `data-testid` attributes:
+
+| Action | Selector | Example |
+|--------|----------|---------|
+| Navigate | URL | `https://grafana-dem-playground.fly.dev/` |
+| Click link | `[data-testid="nav-checkout"]` | Go to checkout |
+| Fill input | `[data-testid="checkout-name"]` | Type "Test User" |
+| Fill input | `[data-testid="checkout-email"]` | Type "test@example.com" |
+| Click button | `[data-testid="checkout-submit"]` | Submit form |
+| Assert | `[data-testid="checkout-message"]` | Contains "success" |
+
+**Sample browser flow:**
+1. Navigate to `/`
+2. Click `[data-testid="nav-products"]`
+3. Wait for `[data-testid="products-list"]` to be visible
+4. Click `[data-testid="nav-checkout"]`
+5. Fill `[data-testid="checkout-name"]` with "Synthetic Test"
+6. Fill `[data-testid="checkout-email"]` with "synthetic@test.com"
+7. Click `[data-testid="checkout-submit"]`
+8. Assert `[data-testid="checkout-message"]` contains "success"
+
+### Scripted Checks
+
+Use JavaScript in the browser context (Playwright) to call APIs and assert:
+
+```javascript
+// Example: Call API and assert response
+const response = await fetch('/api/script/echo?hello=world');
+const data = await response.json();
+if (data.query.hello !== 'world') throw new Error('Echo failed');
+
+// Example: Multi-step API flow
+const init = await fetch('/api/session/init');
+const { sessionId, token } = await init.json();
+const validate = await fetch(`/api/session/validate?sessionId=${sessionId}&token=${token}`);
+if (validate.status !== 200) throw new Error('Session validation failed');
+```
+
+### data-testid Reference (for browser/scripted checks)
+
+| Element | data-testid |
+|---------|-------------|
+| Page header | `page-header` |
+| Page title | `page-title` |
+| App version | `app-version` |
+| Main nav | `main-nav` |
+| Nav: Home | `nav-home` |
+| Nav: Products | `nav-products` |
+| Nav: Checkout | `nav-checkout` |
+| Nav: Status | `nav-status` |
+| Generate Activity button | `btn-generate-activity` |
+| Trigger JS Error button | `btn-js-error` |
+| Trigger Error Spike button | `btn-error-spike` |
+| Checkout form | `checkout-form` |
+| Checkout name input | `checkout-name` |
+| Checkout email input | `checkout-email` |
+| Checkout submit button | `checkout-submit` |
+| Checkout message | `checkout-message` |
+| Status section | `status-section` |
+| Status OK badge | `status-ok` |
+| Products list | `products-list` |
+| Product item | `product-prod-1`, `product-prod-2`, etc. |
 
 ## Deployment
 

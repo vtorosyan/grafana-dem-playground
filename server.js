@@ -27,6 +27,22 @@ let state = {
   version: APP_VERSION
 };
 
+// In-memory stores for multi-HTTP / synthetic monitoring (reset on restart)
+const sessions = new Map();   // sessionId -> { token, createdAt }
+const orders = new Map();     // orderId -> { items, status, createdAt }
+
+// Static product list for /api/products
+const products = [
+  { id: 'prod-1', name: 'Widget A', price: 9.99 },
+  { id: 'prod-2', name: 'Widget B', price: 19.99 },
+  { id: 'prod-3', name: 'Widget C', price: 29.99 }
+];
+
+// Generate short IDs
+function genId(prefix) {
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
 // Request logging middleware
 app.use((req, res, next) => {
   const start = Date.now();
@@ -50,6 +66,10 @@ app.get('/checkout', (req, res) => {
 
 app.get('/status', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'status.html'));
+});
+
+app.get('/products', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'products.html'));
 });
 
 // API: Get health status
@@ -120,6 +140,85 @@ app.get('/api/error', (req, res) => {
   res.status(500).json({
     ok: false,
     error: 'Error spike - intentional 500 response',
+    ts: Date.now()
+  });
+});
+
+// --- Synthetic Monitoring APIs ---
+
+// Step 1 for multi-HTTP: Initialize session, returns sessionId and token for next step
+app.get('/api/session/init', (req, res) => {
+  const sessionId = genId('sess');
+  const token = genId('tok').slice(0, 16);
+  sessions.set(sessionId, { token, createdAt: Date.now() });
+  res.json({
+    sessionId,
+    token,
+    expiresIn: 60
+  });
+});
+
+// Step 2 for multi-HTTP: Validate session (use sessionId and token from /api/session/init)
+app.get('/api/session/validate', (req, res) => {
+  const { sessionId, token } = req.query;
+  if (!sessionId || !token) {
+    return res.status(400).json({ error: 'sessionId and token required' });
+  }
+  const sess = sessions.get(sessionId);
+  if (!sess || sess.token !== token) {
+    return res.status(401).json({ error: 'Invalid or expired session' });
+  }
+  res.json({ valid: true, sessionId });
+});
+
+// List products
+app.get('/api/products', (req, res) => {
+  res.json({ products });
+});
+
+// Get product by ID
+app.get('/api/products/:id', (req, res) => {
+  const p = products.find(x => x.id === req.params.id);
+  if (!p) return res.status(404).json({ error: 'Product not found' });
+  res.json(p);
+});
+
+// Step 3 for multi-HTTP: Create order, returns orderId for next step
+app.post('/api/orders', (req, res) => {
+  const items = req.body?.items || [{ productId: 'prod-1', qty: 1 }];
+  const orderId = genId('ord');
+  orders.set(orderId, {
+    orderId,
+    items,
+    status: 'created',
+    createdAt: Date.now()
+  });
+  res.status(201).json({
+    orderId,
+    status: 'created'
+  });
+});
+
+// Step 4 for multi-HTTP: Get order by ID (use orderId from POST /api/orders)
+app.get('/api/orders/:orderId', (req, res) => {
+  const order = orders.get(req.params.orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found' });
+  res.json(order);
+});
+
+// Echo endpoint for scripted checks (returns query params / body for assertions)
+app.get('/api/script/echo', (req, res) => {
+  res.json({
+    method: 'GET',
+    query: req.query,
+    ts: Date.now()
+  });
+});
+
+app.post('/api/script/echo', (req, res) => {
+  res.json({
+    method: 'POST',
+    body: req.body,
     ts: Date.now()
   });
 });
