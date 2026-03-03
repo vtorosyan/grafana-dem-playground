@@ -1,6 +1,6 @@
 # DEM Playground
 
-A tiny demo app for **Week of Load Testing (WOLT)** demonstrating the **DEM (Digital Experience Monitoring) lifecycle**: detect → scope → select session → view → diagnose → fix → validate.
+A tiny demo app for learning and exploring **Digital Experience Monitoring (DEM)** with Grafana tooling. It walks through the DEM lifecycle: detect → scope → select session → view → diagnose → fix → validate.
 
 ## Overview
 
@@ -157,7 +157,7 @@ APP_VERSION=v2.0.0 npm start
 
 The version is displayed on all pages and included in all API responses, making it easy to track version changes in your observability platform.
 
-## WOLT Flow Mapping
+## DEM Flow Mapping
 
 ### 1. **DETECT** - Identify Issues
 - **Scenario**: Monitor `/api/health` endpoint
